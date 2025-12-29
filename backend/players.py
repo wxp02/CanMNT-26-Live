@@ -1,57 +1,34 @@
-# Canadian National Team Players to Track
-# Add player IDs from API-Football here
-CANADIAN_PLAYERS = {
-    "Alphonso Davies": {
-        "id": 162757,  # API-Football player ID
-        "team": "Bayern Munich",
-        "position": "Defender"
-    },
-    "Jonathan David": {
-        "id": 163474,
-        "team": "LOSC Lille",
-        "position": "Forward"
-    },
-    "Tajon Buchanan": {
-        "id": 149033,
-        "team": "Inter Milan",
-        "position": "Midfielder"
-    },
-    "Stephen Eustáquio": {
-        "id": 35697,
-        "team": "FC Porto",
-        "position": "Midfielder"
-    },
-    "Cyle Larin": {
-        "id": 37029,
-        "team": "Real Valladolid",
-        "position": "Forward"
-    },
-    "Kamal Miller": {
-        "id": 164025,
-        "team": "CF Montréal",
-        "position": "Defender"
-    },
-    "Alistair Johnston": {
-        "id": 279068,
-        "team": "Celtic",
-        "position": "Defender"
-    },
-    "Ismaël Koné": {
-        "id": 306721,
-        "team": "Watford",
-        "position": "Midfielder"
-    },
-    "Richie Laryea": {
-        "id": 67126,
-        "team": "Toronto FC",
-        "position": "Defender"
-    },
-    "Jonathan Osorio": {
-        "id": 2928,
-        "team": "Toronto FC",
-        "position": "Midfielder"
-    }
+# SofaScore player IDs (different from API-Football IDs)
+SOFASCORE_PLAYER_IDS = {
+    "Alphonso Davies": 843665,
+    "Jonathan David": 935564,
+    "Tajon Buchanan": 973290,
+    "Stephen Eustáquio": 886223,
+    "Cyle Larin": 790179,
+    "Alistair Johnston": 984419,
+    "Ismaël Koné": 1134351,
+    "Maxime Crépeau": 155736,
+    "Kamal Miller": 934841,
+    "Richie Laryea": 829207,
+    "Dayne St. Clair": 973286,
+    "Owen Goodman": 1087790,
+    "Zorhan Bassong": 976163,
+    "Kamal Miller": 976163,
+    "Joel Waterman": 1020472,
+    "Derek Cornelius": 801411,
+    "Alfie Jones": 845426,
+    "Niko Sigur": 1411145,
+    "Mathieu Choinière": 937255,
+    "Junior Hoilett": 33478,
+    "Jacob Shaffelburg": 976313,
+    "Nathan-Dylan Saliba": 1093229,
+    "Ali Ahmed": 1464637,
+    "Jonathan Osorio": 273031,
+    "Jayden Nelson": 1002489,
+    "Tani Oluwaseyi": 1172477,
+    "Theo Bair": 936848,
+    "Promise David": 1119328
 }
 
-# Map API-Football player IDs for quick lookup
-PLAYER_ID_MAP = {player["id"]: name for name, player in CANADIAN_PLAYERS.items()}
+# Map player IDs for quick lookup
+PLAYER_ID_MAP = {player_id: name for name, player_id in SOFASCORE_PLAYER_IDS.items()}

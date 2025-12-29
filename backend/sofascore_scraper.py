@@ -3,7 +3,7 @@ import tls_client
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any
 from models import PlayerEvent
-from players import CANADIAN_PLAYERS
+from players import SOFASCORE_PLAYER_IDS
 
 
 class SofaScoreScraper:
@@ -13,19 +13,7 @@ class SofaScoreScraper:
     
     def __init__(self):
         self.base_url = "https://api.sofascore.com/api/v1"
-        # SofaScore player IDs (different from API-Football IDs)
-        self.sofascore_player_ids = {
-            "Alphonso Davies": 829035,
-            "Jonathan David": 935564,
-            "Tajon Buchanan": 896768,
-            "Stephen Eustáquio": 356740,
-            "Cyle Larin": 174659,
-            "Alistair Johnston": 922858,
-            "Ismaël Koné": 1273270,
-            "Maxime Crépeau": 104669,
-            "Kamal Miller": 848436,
-            "Richie Laryea": 297229,
-        }
+        self.sofascore_player_ids = SOFASCORE_PLAYER_IDS
         # Create session with browser-like TLS
         self.session = tls_client.Session(
             client_identifier="chrome_120",
