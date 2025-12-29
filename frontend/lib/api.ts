@@ -5,6 +5,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 export interface PlayerSeasonStats {
   player: string;
   team: string;
+  hardcoded_team: string;
+  position: string;
   league: string;
   season: string;
   matches: number;

@@ -19,6 +19,21 @@ class SofaScoreScraper:
             client_identifier="chrome_120",
             random_tls_extension_order=True
         )
+    
+    def get_player_id(self, player_name: str) -> int:
+        """Get player ID from player name"""
+        player_data = self.sofascore_player_ids.get(player_name, {})
+        return player_data.get("id", 0) if isinstance(player_data, dict) else 0
+    
+    def get_player_position(self, player_name: str) -> str:
+        """Get player position from player name"""
+        player_data = self.sofascore_player_ids.get(player_name, {})
+        return player_data.get("position", "N/A") if isinstance(player_data, dict) else "N/A"
+    
+    def get_player_team(self, player_name: str) -> str:
+        """Get player team from player name"""
+        player_data = self.sofascore_player_ids.get(player_name, {})
+        return player_data.get("team", "Unknown") if isinstance(player_data, dict) else "Unknown"
 
     def calculate_timestamp(self, match_time: str) -> str:
         """Calculate relative timestamp from match time"""
@@ -55,8 +70,10 @@ class SofaScoreScraper:
             print("\n🔍 Fetching player events from SofaScore...")
             
             # Try to fetch last events for each player
-            for player_name, player_id in self.sofascore_player_ids.items():
+            for player_name, player_data in self.sofascore_player_ids.items():
                 try:
+                    # Get player ID from the data structure
+                    player_id = player_data.get("id") if isinstance(player_data, dict) else player_data
                     # Get player's last events
                     url = f"{self.base_url}/player/{player_id}/events/last/0"
                     
@@ -238,8 +255,10 @@ class SofaScoreScraper:
             if player_name and player_name in self.sofascore_player_ids:
                 players_to_fetch = {player_name: self.sofascore_player_ids[player_name]}
             
-            for player_name, player_id in players_to_fetch.items():
+            for player_name, player_data in players_to_fetch.items():
                 try:
+                    # Get player ID from the data structure
+                    player_id = player_data.get("id") if isinstance(player_data, dict) else player_data
                     # Get player statistics for current season
                     url = f"{self.base_url}/player/{player_id}/statistics/seasons"
                     
@@ -321,9 +340,15 @@ class SofaScoreScraper:
                             # Calculate average rating weighted by matches played
                             avg_rating = sum(total_ratings) / len(total_ratings) if total_ratings else 0
                             
+                            # Get hardcoded position and team from players.py
+                            position = self.get_player_position(player_name)
+                            hardcoded_team = self.get_player_team(player_name)
+                            
                             all_stats[player_name] = {
                                 "player": player_name,
-                                "team": team_name,
+                                "team": team_name,  # Team from SofaScore API
+                                "hardcoded_team": hardcoded_team,  # Team from players.py
+                                "position": position,  # Position from players.py
                                 "league": "All Competitions",
                                 "season": "2025/26",
                                 "matches": total_matches,
