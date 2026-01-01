@@ -86,10 +86,11 @@ class SofaScoreScraper:
                         
                         print(f"   Checking {player_name}...")
                         
-                        # Process recent events (last 2 days)
-                        cutoff_time = datetime.now(timezone.utc) - timedelta(days=2)
+                        # Process events from entire 2025/26 season (started August 2025)
+                        # Include matches from last 200 days to cover whole season including pre-season
+                        cutoff_time = datetime.now(timezone.utc) - timedelta(days=200)
                         
-                        for event in events[:3]:  # Check last 3 matches
+                        for event in events[:35]:  # Check last 35 matches per player
                             match_time = event.get("startTimestamp", 0)
                             event_datetime = datetime.fromtimestamp(match_time, tz=timezone.utc)
                             
@@ -153,6 +154,14 @@ class SofaScoreScraper:
                                     if incident_type == "goal":
                                         event_type = "goal"
                                         event_name = "Goal"
+                                    elif incident_type == "card":
+                                        # Check card type from incidentClass
+                                        incident_class = incident.get("incidentClass", "")
+                                        event_type = "card"
+                                        if incident_class == "red":
+                                            event_name = "Red Card"
+                                        else:
+                                            event_name = "Yellow Card"
                                     elif incident_type == "yellowCard":
                                         event_type = "card"
                                         event_name = "Yellow Card"
@@ -190,7 +199,8 @@ class SofaScoreScraper:
                                     minute=f"{minute}'",
                                     timestamp=timestamp,
                                     league=tournament,
-                                    team=player_team
+                                    team=player_team,
+                                    unix_timestamp=match_time  # Store actual timestamp for sorting
                                 ))
                                 event_id += 1
                         
@@ -199,9 +209,6 @@ class SofaScoreScraper:
                         
                     else:
                         print(f"   ⚠️ Could not fetch data for {player_name} (status: {response.status_code})")
-                    
-                    if len(all_events) >= 8:
-                        break
                         
                 except Exception as e:
                     print(f"   Error processing player {player_name}: {e}")
@@ -214,8 +221,8 @@ class SofaScoreScraper:
         
         print(f"\n✅ Total events found: {len(all_events)}")
         
-        # Sort by most recent and return top 8
-        return sorted(all_events, key=lambda x: x.id, reverse=True)[:8] if all_events else []
+        # Sort by most recent (unix_timestamp descending) and return all events
+        return sorted(all_events, key=lambda x: x.unix_timestamp or 0, reverse=True) if all_events else []
     
     def calculate_timestamp_from_unix(self, unix_timestamp: int) -> str:
         """Calculate relative timestamp from Unix timestamp"""

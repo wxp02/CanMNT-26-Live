@@ -91,7 +91,7 @@ export function LivePulse() {
   }
   return (
     <div className="space-y-3">
-      {events.map((event) => (
+      {events.slice(0, 8).map((event) => (
         <Card
           key={event.id}
           className={`p-4 border-l-4 transition-all hover:shadow-md ${

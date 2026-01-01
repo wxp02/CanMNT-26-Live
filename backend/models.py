@@ -12,6 +12,7 @@ class PlayerEvent(BaseModel):
     timestamp: str
     league: str
     team: Optional[str] = None
+    unix_timestamp: Optional[int] = None  # For sorting by actual time
 
 
 class LivePulseResponse(BaseModel):
