@@ -60,8 +60,28 @@ export function ActivityTable({ filters }: ActivityTableProps) {
       return false;
     }
 
-    // Time range filtering could be added here if we parse timestamps
-    // For now, we show all recent events from the API
+    // Filter by time range
+    if (filters.timeRange !== "all") {
+      const now = new Date();
+      const timestamp = activity.timestamp.toLowerCase();
+
+      // Parse relative timestamps
+      if (timestamp.includes("day")) {
+        const daysMatch = timestamp.match(/(\d+)\s*day/);
+        if (daysMatch) {
+          const daysAgo = parseInt(daysMatch[1]);
+          if (filters.timeRange === "7days" && daysAgo > 7) return false;
+          if (filters.timeRange === "30days" && daysAgo > 30) return false;
+        }
+      } else if (timestamp.includes("hour")) {
+        // Events within hours are always included
+      } else if (
+        timestamp.includes("minute") ||
+        timestamp.includes("just now")
+      ) {
+        // Events within minutes are always included
+      }
+    }
 
     return true;
   });

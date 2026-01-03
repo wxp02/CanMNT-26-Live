@@ -57,7 +57,6 @@ export function ActivityFilters({ filters, setFilters }: ActivityFiltersProps) {
           <SelectItem value="goal">Goals Only</SelectItem>
           <SelectItem value="assist">Assists Only</SelectItem>
           <SelectItem value="card">Cards Only</SelectItem>
-          <SelectItem value="substitution">Substitutions</SelectItem>
         </SelectContent>
       </Select>
 
@@ -72,7 +71,6 @@ export function ActivityFilters({ filters, setFilters }: ActivityFiltersProps) {
           <SelectItem value="all">All Time</SelectItem>
           <SelectItem value="7days">Last 7 Days</SelectItem>
           <SelectItem value="30days">Last 30 Days</SelectItem>
-          <SelectItem value="season">This Season</SelectItem>
         </SelectContent>
       </Select>
 

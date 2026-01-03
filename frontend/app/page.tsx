@@ -1,7 +1,7 @@
-"use client"
-import { CountdownTimer } from "@/components/countdown-timer"
-import { LivePulse } from "@/components/live-pulse"
-import Link from "next/link"
+"use client";
+import { CountdownTimer } from "@/components/countdown-timer";
+import { LivePulse } from "@/components/live-pulse";
+import Link from "next/link";
 
 export default function CommandCenter() {
   return (
@@ -12,10 +12,15 @@ export default function CommandCenter() {
           <div className="flex h-16 items-center">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-2">
-                <span className="text-lg font-bold tracking-tight text-foreground">CanMNT 26 LIVE</span>
+                <span className="text-lg font-bold tracking-tight text-foreground">
+                  CanMNT 26 LIVE
+                </span>
               </Link>
               <div className="hidden md:flex gap-6">
-                <Link href="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                >
                   Command Center
                 </Link>
                 <Link
@@ -42,7 +47,9 @@ export default function CommandCenter() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="text-center space-y-6">
             <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-              <span className="text-sm font-medium text-primary">2026 FIFA World Cup</span>
+              <span className="text-sm font-medium text-primary">
+                2026 FIFA World Cup
+              </span>
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-balance">
               The Countdown is On
@@ -62,11 +69,15 @@ export default function CommandCenter() {
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <h2 className="text-3xl font-bold tracking-tight">Live Pulse</h2>
-              <p className="text-muted-foreground">Real-time updates from CanMNT players worldwide</p>
+              <p className="text-muted-foreground">
+                Real-time updates from CanMNT players worldwide
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-goal animate-pulse" />
-              <span className="text-sm font-medium text-muted-foreground">Live</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Live
+              </span>
             </div>
           </div>
 
@@ -74,5 +85,5 @@ export default function CommandCenter() {
         </div>
       </section>
     </div>
-  )
+  );
 }
