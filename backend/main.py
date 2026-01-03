@@ -2,14 +2,28 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 from models import LivePulseResponse, PlayerEvent
-# from api_service import football_api
 from sofascore_scraper import sofascore_scraper
 from config import settings
+from database import db_service
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Connect to database
+    print("🔌 Connecting to database...")
+    await db_service.connect()
+    print("✅ Database connected")
+    yield
+    # Shutdown: Disconnect from database
+    print("🔌 Disconnecting from database...")
+    await db_service.disconnect()
+    print("✅ Database disconnected")
 
 app = FastAPI(
     title="CanMNT 26 Live API",
     description="Backend API for tracking Canadian National Team players' live match events",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Configure CORS
@@ -32,7 +46,9 @@ async def root():
         "message": "CanMNT 26 Live API",
         "status": "running",
         "endpoints": {
-            "/api/live-pulse": "Get live player events",
+            "/api/live-pulse": "Get live player events (from database)",
+            "/api/scrape-events": "Manually trigger scraper to update database (POST)",
+            "/api/db-stats": "Get database statistics",
             "/api/season-stats": "Get current season statistics for all players",
             "/api/season-stats?player=Jonathan David": "Get stats for specific player",
             "/health": "Health check"
@@ -80,34 +96,110 @@ async def get_season_stats(player: str = None):
 @app.get("/api/live-pulse", response_model=LivePulseResponse)
 async def get_live_pulse():
     """
-    Get recent events for tracked Canadian national team players.
+    Get recent events for tracked Canadian national team players from database.
+    Data is cached and updated periodically by the scraper.
     
     Returns:
         - events: List of recent player events (goals, assists, cards, etc.)
-        - last_updated: Timestamp of when the data was fetched
+        - last_updated: Timestamp of when the data was last scraped
     """
     try:
-        # Fetch events from SofaScore
-        events = await sofascore_scraper.get_canadian_player_events()
+        # Fetch events from database instead of scraping
+        events = await db_service.get_recent_events()
         
-        # If no events found, use mock data for demonstration
+        # Get last scrape time
+        last_scrape = await db_service.get_latest_scrape_time()
+        last_updated = last_scrape.isoformat() if last_scrape else datetime.now(timezone.utc).isoformat()
+        
+        # If no events in database, return empty list
         if not events:
-            print("No live events found, using mock data")
-            events = get_mock_events()
+            print("⚠️  No events found in database. Run the scraper to populate data.")
+            return LivePulseResponse(
+                events=[],
+                last_updated=last_updated
+            )
         
+        print(f"✅ Returned {len(events)} events from database")
         return LivePulseResponse(
             events=events,
-            last_updated=datetime.now(timezone.utc).isoformat()
+            last_updated=last_updated
         )
     except Exception as e:
-        print(f"Error in get_live_pulse: {e}")
+        print(f"❌ Error in get_live_pulse: {e}")
         import traceback
         traceback.print_exc()
-        # Return mock data on error
-        return LivePulseResponse(
-            events=get_mock_events(),
-            last_updated=datetime.now(timezone.utc).isoformat()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/scrape-events")
+async def scrape_events():
+    """
+    Manually trigger the scraper to fetch and save new events.
+    This endpoint should be called periodically (e.g., every 15-30 minutes) 
+    or on-demand when you want to refresh the data.
+    
+    Returns:
+        - events_found: Number of events fetched from SofaScore
+        - events_saved: Number of events saved to database
+        - success: Whether the scrape was successful
+    """
+    try:
+        print("\n🔄 Starting manual scrape...")
+        
+        # Fetch events from SofaScore
+        events = await sofascore_scraper.get_canadian_player_events()
+        events_found = len(events)
+        
+        # Save to database
+        events_saved = await db_service.save_events(events)
+        
+        # Log the scraper run
+        await db_service.log_scraper_run(
+            events_found=events_found,
+            success=True
         )
+        
+        print(f"✅ Scrape complete: {events_found} found, {events_saved} saved")
+        
+        return {
+            "success": True,
+            "events_found": events_found,
+            "events_saved": events_saved,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Scrape failed: {error_msg}")
+        
+        # Log failed run
+        await db_service.log_scraper_run(
+            events_found=0,
+            success=False,
+            error=error_msg
+        )
+        
+        raise HTTPException(status_code=500, detail=error_msg)
+
+
+@app.get("/api/db-stats")
+async def get_db_stats():
+    """
+    Get database statistics
+    
+    Returns:
+        - total_events: Total number of events in database
+        - last_scrape: Timestamp of last successful scrape
+    """
+    try:
+        total = await db_service.get_event_count()
+        last_scrape = await db_service.get_latest_scrape_time()
+        
+        return {
+            "total_events": total,
+            "last_scrape": last_scrape.isoformat() if last_scrape else None
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def get_mock_events() -> list[PlayerEvent]:

@@ -73,24 +73,6 @@ export default function CommandCenter() {
           <LivePulse />
         </div>
       </section>
-
-      {/* Quick Stats */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 border-t border-border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-card border border-border rounded-lg p-6 space-y-2">
-            <div className="text-3xl font-bold text-goal">47</div>
-            <div className="text-sm text-muted-foreground">Goals This Season</div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-6 space-y-2">
-            <div className="text-3xl font-bold text-assist">32</div>
-            <div className="text-sm text-muted-foreground">Assists This Season</div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-6 space-y-2">
-            <div className="text-3xl font-bold text-primary">23</div>
-            <div className="text-sm text-muted-foreground">Active Roster Candidates</div>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }

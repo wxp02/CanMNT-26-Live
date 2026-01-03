@@ -1,0 +1,41 @@
+// Prisma schema for CanMNT 26 Live
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./canmnt.db"
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+model PlayerEvent {
+  id        String   @id @default(uuid())
+  eventId   String   // Original event ID from SofaScore
+  player    String
+  position  String?
+  team      String?
+  eventType String   // goal, assist, card, etc.
+  event     String   // Display name: "Goal", "Assist", etc.
+  context   String   // Full match context: "Canada 2-1 USA"
+  league    String   // Tournament/league name
+  minute    String   // Match minute when event occurred
+  timestamp String   // When the match happened
+  matchTime DateTime // Match datetime for sorting/filtering
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([player])
+  @@index([eventType])
+  @@index([matchTime])
+  @@unique([eventId, player, eventType, minute])
+}
+
+model ScraperRun {
+  id          String   @id @default(uuid())
+  ranAt       DateTime @default(now())
+  eventsFound Int
+  success     Boolean
+  error       String?
+}
