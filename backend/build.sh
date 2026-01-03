@@ -1,17 +1,16 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# exit on error
+set -o errexit
 
-echo "Installing Python dependencies..."
-pip install --upgrade pip
 pip install -r requirements.txt
 
-echo "Generating Prisma client..."
-python -m prisma generate
+prisma generate
 
-echo "Fetching Prisma binaries for debian-openssl-3.0.x..."
-python -m prisma py fetch
-
-echo "Verifying Prisma installation..."
-python -c "from prisma import Prisma; print('Prisma imported successfully')"
-
-echo "Build completed successfully!"
+# Store/pull Prisma cache with build cache
+if [[ ! -d $PRISMA_BINARY_CACHE_DIR ]]; then
+  echo "...Copying Prisma Binary Cache from Build Cache"
+  cp -R $XDG_CACHE_HOME/prisma-python/binaries $PRISMA_BINARY_CACHE_DIR
+else
+  echo "...Storing Prisma Binary Cache in Build Cache"
+  cp -R $PRISMA_BINARY_CACHE_DIR $XDG_CACHE_HOME/prisma-python/
+fi
