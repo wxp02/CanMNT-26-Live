@@ -56,6 +56,9 @@ export default function Ledger() {
               A complete, timestamped record of every goal, assist, card, and action from CanMNT players across all
               leagues
             </p>
+            <p className="text-sm text-muted-foreground max-w-3xl">
+              All statistics are from the 2024/25 season.
+            </p>
           </div>
         </div>
       </section>

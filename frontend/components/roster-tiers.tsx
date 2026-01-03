@@ -11,12 +11,51 @@ interface Player {
   name: string;
   position: string;
   form: number;
+  probability: number;
   minutesPlayed: number;
   goals: number;
   assists: number;
   league: string;
   team?: string;
 }
+
+// Hardcoded roster probabilities based on analysis
+const ROSTER_PROBABILITIES: Record<string, number> = {
+  // The Locks (75%-100% Probability)
+  "Alphonso Davies": 100,
+  "Jonathan David": 100,
+  "Stephen Eustáquio": 100,
+  "Tajon Buchanan": 100,
+  "Alistair Johnston": 100,
+  "Ismaël Koné": 100,
+  "Dayne St. Clair": 90,
+  "Richie Laryea": 90,
+  "Ali Ahmed": 90,
+  "Promise David": 85,
+  "Niko Sigur": 85,
+  "Derek Cornelius": 85,
+  "Maxime Crépeau": 78,
+
+  // The Bubble (60%-75% Probability)
+  "Nathan-Dylan Saliba": 74,
+  "Tani Oluwaseyi": 73,
+  "Jacob Shaffelburg": 72,
+  "Mathieu Choinière": 65,
+  "Alfie Jones": 62,
+  "Jayden Nelson": 61,
+
+  // Outside Looking In (40-60% Probability)
+  "Joel Waterman": 59,
+  "Theo Bair": 50,
+  "Kamal Miller": 45,
+  "Jonathan Osorio": 40,
+  "Cyle Larin": 40,
+
+  // Cold/Dropped
+  "Junior Hoilett": 25,
+  "Owen Goodman": 20,
+  "Zorhan Bassong": 15,
+};
 
 interface PlayersByTier {
   locks: Player[];
@@ -31,6 +70,7 @@ const mockPlayers: PlayersByTier = {
       name: "Alphonso Davies",
       position: "LB",
       form: 85,
+      probability: 100,
       minutesPlayed: 1620,
       goals: 3,
       assists: 8,
@@ -40,6 +80,7 @@ const mockPlayers: PlayersByTier = {
       name: "Jonathan David",
       position: "ST",
       form: 92,
+      probability: 100,
       minutesPlayed: 1580,
       goals: 15,
       assists: 4,
@@ -49,6 +90,7 @@ const mockPlayers: PlayersByTier = {
       name: "Stephen Eustáquio",
       position: "CM",
       form: 78,
+      probability: 100,
       minutesPlayed: 1450,
       goals: 2,
       assists: 5,
@@ -58,6 +100,7 @@ const mockPlayers: PlayersByTier = {
       name: "Maxime Crépeau",
       position: "GK",
       form: 81,
+      probability: 80,
       minutesPlayed: 1620,
       goals: 0,
       assists: 0,
@@ -69,6 +112,7 @@ const mockPlayers: PlayersByTier = {
       name: "Tajon Buchanan",
       position: "RW",
       form: 74,
+      probability: 100,
       minutesPlayed: 1120,
       goals: 4,
       assists: 6,
@@ -78,6 +122,7 @@ const mockPlayers: PlayersByTier = {
       name: "Cyle Larin",
       position: "ST",
       form: 76,
+      probability: 40,
       minutesPlayed: 1340,
       goals: 9,
       assists: 2,
@@ -87,6 +132,7 @@ const mockPlayers: PlayersByTier = {
       name: "Alistair Johnston",
       position: "RB",
       form: 79,
+      probability: 100,
       minutesPlayed: 1480,
       goals: 1,
       assists: 4,
@@ -96,6 +142,7 @@ const mockPlayers: PlayersByTier = {
       name: "Ismaël Koné",
       position: "CM",
       form: 72,
+      probability: 100,
       minutesPlayed: 1260,
       goals: 3,
       assists: 7,
@@ -107,6 +154,7 @@ const mockPlayers: PlayersByTier = {
       name: "Jonathan Osorio",
       position: "CM",
       form: 68,
+      probability: 40,
       minutesPlayed: 980,
       goals: 2,
       assists: 3,
@@ -116,6 +164,7 @@ const mockPlayers: PlayersByTier = {
       name: "Derek Cornelius",
       position: "CB",
       form: 71,
+      probability: 80,
       minutesPlayed: 1150,
       goals: 1,
       assists: 1,
@@ -125,6 +174,7 @@ const mockPlayers: PlayersByTier = {
       name: "Richie Laryea",
       position: "RB",
       form: 66,
+      probability: 90,
       minutesPlayed: 890,
       goals: 0,
       assists: 5,
@@ -134,6 +184,7 @@ const mockPlayers: PlayersByTier = {
       name: "Liam Millar",
       position: "LW",
       form: 69,
+      probability: 30,
       minutesPlayed: 1020,
       goals: 4,
       assists: 2,
@@ -145,6 +196,7 @@ const mockPlayers: PlayersByTier = {
       name: "Lucas Cavallini",
       position: "ST",
       form: 54,
+      probability: 10,
       minutesPlayed: 520,
       goals: 1,
       assists: 1,
@@ -154,6 +206,7 @@ const mockPlayers: PlayersByTier = {
       name: "Samuel Piette",
       position: "CDM",
       form: 58,
+      probability: 15,
       minutesPlayed: 680,
       goals: 0,
       assists: 2,
@@ -192,7 +245,7 @@ function PlayerCard({ player, tier }: { player: any; tier: string }) {
             </div>
           </div>
           <div className={`text-2xl font-bold ${getTierColor()}`}>
-            {player.form}
+            {player.probability}
           </div>
         </div>
 
@@ -227,29 +280,42 @@ function PlayerCard({ player, tier }: { player: any; tier: string }) {
   );
 }
 
-// Categorize players into tiers based on form rating
+// Categorize players into tiers based on probability
 function categorizePlayers(
   statsData: Record<string, PlayerSeasonStats>
 ): PlayersByTier {
-  const players: Player[] = Object.values(statsData).map((stats) => ({
-    name: stats.player,
-    position: stats.position || "MF",
-    form: Math.round(stats.form_rating),
-    minutesPlayed: stats.minutes,
-    goals: stats.goals,
-    assists: stats.assists,
-    league: stats.league,
-    team: stats.hardcoded_team || stats.team,
-  }));
+  const players: Player[] = Object.values(statsData).map((stats) => {
+    const probability = ROSTER_PROBABILITIES[stats.player] || 0;
+    return {
+      name: stats.player,
+      position: stats.position || "MF",
+      form: Math.round(stats.form_rating),
+      probability: probability,
+      minutesPlayed: stats.minutes,
+      goals: stats.goals,
+      assists: stats.assists,
+      league: stats.league,
+      team: stats.hardcoded_team || stats.team,
+    };
+  });
 
-  // Sort by form rating
-  players.sort((a, b) => b.form - a.form);
+  // Sort by probability first, then form rating
+  players.sort((a, b) => {
+    if (b.probability !== a.probability) {
+      return b.probability - a.probability;
+    }
+    return b.form - a.form;
+  });
 
-  // Categorize into tiers
-  const locks = players.filter((p) => p.form >= 75);
-  const probables = players.filter((p) => p.form >= 60 && p.form < 75);
-  const bubble = players.filter((p) => p.form >= 45 && p.form < 60);
-  const cold = players.filter((p) => p.form < 45);
+  // Categorize into tiers based on probability
+  const locks = players.filter((p) => p.probability >= 75);
+  const probables = players.filter(
+    (p) => p.probability >= 60 && p.probability < 75
+  );
+  const bubble = players.filter(
+    (p) => p.probability >= 40 && p.probability < 60
+  );
+  const cold = players.filter((p) => p.probability < 40);
 
   return { locks, probables, bubble, cold };
 }
@@ -315,7 +381,7 @@ export function RosterTiers() {
                   The Locks
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Guaranteed roster spots • 100% Probability
+                  Guaranteed roster spots • 75%-100% Probability
                 </p>
               </div>
             </div>
@@ -343,7 +409,7 @@ export function RosterTiers() {
                   Probables
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Strong contenders • 75-90% Probability
+                  Strong contenders • 60%-75% Probability
                 </p>
               </div>
             </div>

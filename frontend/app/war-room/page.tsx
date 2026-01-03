@@ -48,6 +48,9 @@ export default function WarRoom() {
             <p className="text-lg text-muted-foreground max-w-3xl text-balance">
               Data-driven roster predictions: Who's on the plane to Toronto?
             </p>
+            <p className="text-sm text-muted-foreground max-w-3xl">
+              All statistics are from club competitions only (2024/25 season).
+            </p>
           </div>
 
           {/* Legend */}
@@ -56,14 +59,14 @@ export default function WarRoom() {
               <Lock className="h-5 w-5 text-lock" />
               <div className="space-y-0.5">
                 <div className="text-sm font-medium">The Locks</div>
-                <div className="text-xs text-muted-foreground">100% Probability</div>
+                <div className="text-xs text-muted-foreground">75%-100%</div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
               <TrendingUp className="h-5 w-5 text-probable" />
               <div className="space-y-0.5">
                 <div className="text-sm font-medium">Probables</div>
-                <div className="text-xs text-muted-foreground">75-90%</div>
+                <div className="text-xs text-muted-foreground">60%-75%</div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
