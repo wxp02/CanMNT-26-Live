@@ -329,10 +329,14 @@ export function RosterTiers() {
     async function loadStats() {
       try {
         setLoading(true);
+        console.log("Fetching season stats from API...");
         const data = await fetchSeasonStats();
+        console.log("Received data:", data);
 
         if (data.players && Object.keys(data.players).length > 0) {
+          console.log(`Categorizing ${Object.keys(data.players).length} players...`);
           const categorized = categorizePlayers(data.players);
+          console.log("Categorized players:", categorized);
           setPlayers(categorized);
         } else {
           // Use mock data if no real data available
@@ -340,7 +344,7 @@ export function RosterTiers() {
         }
       } catch (err) {
         console.error("Failed to load season stats:", err);
-        setError("Failed to load player stats. Using mock data.");
+        setError(`Failed to load player stats: ${err instanceof Error ? err.message : 'Unknown error'}`);
         // Keep mock data on error
       } finally {
         setLoading(false);
