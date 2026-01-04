@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "PlayerEvent" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
     "player" TEXT NOT NULL,
     "position" TEXT,
@@ -11,23 +11,27 @@ CREATE TABLE "PlayerEvent" (
     "league" TEXT NOT NULL,
     "minute" TEXT NOT NULL,
     "timestamp" TEXT NOT NULL,
-    "matchTime" DATETIME NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "matchTime" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PlayerEvent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "ScraperRun" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "ranAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id" TEXT NOT NULL,
+    "ranAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "eventsFound" INTEGER NOT NULL,
     "success" BOOLEAN NOT NULL,
-    "error" TEXT
+    "error" TEXT,
+
+    CONSTRAINT "ScraperRun_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "PlayerSeasonStats" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "player" TEXT NOT NULL,
     "position" TEXT NOT NULL,
     "team" TEXT NOT NULL,
@@ -38,19 +42,23 @@ CREATE TABLE "PlayerSeasonStats" (
     "minutes" INTEGER NOT NULL,
     "goals" INTEGER NOT NULL,
     "assists" INTEGER NOT NULL,
-    "rating" REAL NOT NULL,
-    "formRating" REAL NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "rating" DOUBLE PRECISION NOT NULL,
+    "formRating" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PlayerSeasonStats_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "StatsScraperRun" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "ranAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id" TEXT NOT NULL,
+    "ranAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "playersFound" INTEGER NOT NULL,
     "success" BOOLEAN NOT NULL,
-    "error" TEXT
+    "error" TEXT,
+
+    CONSTRAINT "StatsScraperRun_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
