@@ -1,8 +1,8 @@
 // Prisma schema for CanMNT 26 Live
-// Uses SQLite for local dev, PostgreSQL for production
+// Uses PostgreSQL for both local and production
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
