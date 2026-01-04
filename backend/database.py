@@ -297,7 +297,7 @@ class DatabaseService:
         if not self._connected:
             await self.connect()
         
-        latest_run = await self.db.statsscraperruns.find_first(
+        latest_run = await self.db.statsscraperrun.find_first(
             where={"success": True},
             order={"ranAt": "desc"}
         )
@@ -309,7 +309,7 @@ class DatabaseService:
         if not self._connected:
             await self.connect()
         
-        await self.db.statsscraperruns.create(
+        await self.db.statsscraperrun.create(
             data={
                 "playersFound": players_found,
                 "success": success,
