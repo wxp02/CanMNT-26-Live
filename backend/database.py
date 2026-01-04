@@ -214,7 +214,7 @@ class DatabaseService:
         
         for player_name, stats in stats_data.items():
             try:
-                await self.db.playerseasonstat.upsert(
+                await self.db.playerseasonstats.upsert(
                     where={"player": player_name},
                     data={
                         "create": {
@@ -270,7 +270,7 @@ class DatabaseService:
         if player:
             where_clause["player"] = player
         
-        db_stats = await self.db.playerseasonstat.find_many(where=where_clause)
+        db_stats = await self.db.playerseasonstats.find_many(where=where_clause)
         
         # Convert to dictionary format expected by frontend
         stats_dict = {}
@@ -297,7 +297,7 @@ class DatabaseService:
         if not self._connected:
             await self.connect()
         
-        latest_run = await self.db.statsscraperrun.find_first(
+        latest_run = await self.db.statsscraperruns.find_first(
             where={"success": True},
             order={"ranAt": "desc"}
         )
@@ -309,7 +309,7 @@ class DatabaseService:
         if not self._connected:
             await self.connect()
         
-        await self.db.statsscraperrun.create(
+        await self.db.statsscraperruns.create(
             data={
                 "playersFound": players_found,
                 "success": success,
