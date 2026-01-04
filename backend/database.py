@@ -201,6 +201,121 @@ class DatabaseService:
         
         # Default to recent past
         return now - timedelta(hours=1)
+    
+    async def save_season_stats(self, stats_data: dict) -> int:
+        """
+        Save player season statistics to database
+        Returns: Number of player stats saved
+        """
+        if not self._connected:
+            await self.connect()
+        
+        saved_count = 0
+        
+        for player_name, stats in stats_data.items():
+            try:
+                await self.db.playerseasonstat.upsert(
+                    where={"player": player_name},
+                    data={
+                        "create": {
+                            "player": player_name,
+                            "position": stats.get("position", ""),
+                            "team": stats.get("team", ""),
+                            "hardcodedTeam": stats.get("hardcoded_team", stats.get("team", "")),
+                            "league": stats.get("league", ""),
+                            "season": stats.get("season", "2025/26"),
+                            "matches": stats.get("matches", 0),
+                            "minutes": stats.get("minutes", 0),
+                            "goals": stats.get("goals", 0),
+                            "assists": stats.get("assists", 0),
+                            "rating": float(stats.get("rating", 0.0)),
+                            "formRating": float(stats.get("form_rating", 0.0))
+                        },
+                        "update": {
+                            "position": stats.get("position", ""),
+                            "team": stats.get("team", ""),
+                            "hardcodedTeam": stats.get("hardcoded_team", stats.get("team", "")),
+                            "league": stats.get("league", ""),
+                            "season": stats.get("season", "2025/26"),
+                            "matches": stats.get("matches", 0),
+                            "minutes": stats.get("minutes", 0),
+                            "goals": stats.get("goals", 0),
+                            "assists": stats.get("assists", 0),
+                            "rating": float(stats.get("rating", 0.0)),
+                            "formRating": float(stats.get("form_rating", 0.0))
+                        }
+                    }
+                )
+                saved_count += 1
+            except Exception as e:
+                print(f"Error saving stats for {player_name}: {e}")
+                continue
+        
+        return saved_count
+    
+    async def get_season_stats(self, player: Optional[str] = None) -> dict:
+        """
+        Get season statistics from database
+        
+        Args:
+            player: Optional player name to filter by
+        
+        Returns:
+            Dictionary of player stats
+        """
+        if not self._connected:
+            await self.connect()
+        
+        where_clause = {}
+        if player:
+            where_clause["player"] = player
+        
+        db_stats = await self.db.playerseasonstat.find_many(where=where_clause)
+        
+        # Convert to dictionary format expected by frontend
+        stats_dict = {}
+        for stat in db_stats:
+            stats_dict[stat.player] = {
+                "player": stat.player,
+                "position": stat.position,
+                "team": stat.team,
+                "hardcoded_team": stat.hardcodedTeam,
+                "league": stat.league,
+                "season": stat.season,
+                "matches": stat.matches,
+                "minutes": stat.minutes,
+                "goals": stat.goals,
+                "assists": stat.assists,
+                "rating": stat.rating,
+                "form_rating": stat.formRating
+            }
+        
+        return stats_dict
+    
+    async def get_latest_stats_scrape_time(self) -> Optional[datetime]:
+        """Get the timestamp of the last successful stats scrape"""
+        if not self._connected:
+            await self.connect()
+        
+        latest_run = await self.db.statsscraperrun.find_first(
+            where={"success": True},
+            order={"ranAt": "desc"}
+        )
+        
+        return latest_run.ranAt if latest_run else None
+    
+    async def log_stats_scraper_run(self, players_found: int, success: bool, error: str = None):
+        """Log a stats scraper run"""
+        if not self._connected:
+            await self.connect()
+        
+        await self.db.statsscraperrun.create(
+            data={
+                "playersFound": players_found,
+                "success": success,
+                "error": error
+            }
+        )
 
 
 # Global database service instance

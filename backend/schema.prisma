@@ -1,8 +1,9 @@
 // Prisma schema for CanMNT 26 Live
+// Uses SQLite for local dev, PostgreSQL for production
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./canmnt.db"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -38,4 +39,33 @@ model ScraperRun {
   eventsFound Int
   success     Boolean
   error       String?
+}
+
+model PlayerSeasonStats {
+  id            String   @id @default(uuid())
+  player        String   @unique
+  position      String
+  team          String
+  hardcodedTeam String   // Display name for team
+  league        String
+  season        String
+  matches       Int
+  minutes       Int
+  goals         Int
+  assists       Int
+  rating        Float
+  formRating    Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([player])
+  @@index([season])
+}
+
+model StatsScraperRun {
+  id           String   @id @default(uuid())
+  ranAt        DateTime @default(now())
+  playersFound Int
+  success      Boolean
+  error        String?
 }

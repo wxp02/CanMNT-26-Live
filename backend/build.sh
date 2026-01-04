@@ -5,6 +5,9 @@ set -o errexit
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
+echo "Running Prisma migrations..."
+prisma migrate deploy
+
 echo "Generating Prisma client..."
 prisma generate
 

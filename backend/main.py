@@ -70,7 +70,8 @@ async def health_check():
 @app.get("/api/season-stats")
 async def get_season_stats(player: str = None):
     """
-    Get current season (2025/26) statistics for Canadian players from SofaScore.
+    Get current season (2025/26) statistics for Canadian players from database cache.
+    Data is updated periodically via /api/scrape-season-stats
     
     Query Parameters:
         - player (optional): Specific player name to fetch stats for
@@ -79,19 +80,80 @@ async def get_season_stats(player: str = None):
         - Dictionary of player stats including matches, minutes, goals, assists, rating
     """
     try:
-        print(f"\n📊 Fetching season stats{f' for {player}' if player else ' for all players'}...")
-        stats = await sofascore_scraper.get_player_season_stats(player)
+        print(f"\n📊 Fetching cached season stats{f' for {player}' if player else ' for all players'}...")
+        
+        # Get stats from database
+        stats = await db_service.get_season_stats(player)
+        
+        # Get last scrape time
+        last_scrape = await db_service.get_latest_stats_scrape_time()
+        last_updated = last_scrape.isoformat() if last_scrape else datetime.now(timezone.utc).isoformat()
+        
+        if not stats:
+            print("⚠️  No season stats found in database. Run /api/scrape-season-stats to populate data.")
         
         return {
             "season": "2025/26",
             "players": stats,
             "count": len(stats),
-            "last_updated": datetime.now(timezone.utc).isoformat()
+            "last_updated": last_updated
         }
     except Exception as e:
         print(f"❌ Error in get_season_stats: {e}")
         import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/scrape-season-stats")
+async def scrape_season_stats():
+    """
+    Manually trigger the scraper to fetch and save season statistics.
+    This should be called periodically to update the cached stats.
+    
+    Returns:
+        - players_found: Number of players with stats fetched
+        - players_saved: Number of player stats saved to database
+        - success: Whether the scrape was successful
+    """
+    try:
+        print("\n🔄 Starting season stats scrape...")
+        
+        # Fetch stats from SofaScore
+        stats = await sofascore_scraper.get_player_season_stats()
+        players_found = len(stats)
+        print(f"Found stats for {players_found} players")
+        
+        # Save to database
+        players_saved = await db_service.save_season_stats(stats)
+        print(f"Saved stats for {players_saved} players")
+        
+        # Log the scraper run
+        await db_service.log_stats_scraper_run(
+            players_found=players_found,
+            success=True
+        )
+        
+        print(f"✅ Season stats scrape complete: {players_found} found, {players_saved} saved")
+        
+        return {
+            "players_found": players_found,
+            "players_saved": players_saved,
+            "success": True,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        print(f"❌ Error in scrape_season_stats: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Log failed run
+        await db_service.log_stats_scraper_run(
+            players_found=0,
+            success=False,
+            error=str(e)
+        )
+        
         raise HTTPException(status_code=500, detail=str(e))
 
 
