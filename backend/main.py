@@ -33,6 +33,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3000",
+        "https://canmnt-26-live-frontend.onrender.com",  # Add your frontend URL
+        "https://*.onrender.com",  # Allow all Render preview URLs
     ],
     allow_credentials=True,
     allow_methods=["*"],
