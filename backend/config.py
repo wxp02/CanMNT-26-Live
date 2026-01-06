@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     rapidapi_key: Optional[str] = None
     rapidapi_host: str = "api-football-v1.p.rapidapi.com"
     
+    # Database URL (for Prisma)
+    database_url: Optional[str] = None
+    
     port: int = 8000
     environment: str = "development"
 
