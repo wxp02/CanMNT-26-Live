@@ -245,6 +245,50 @@ async def scrape_events():
         raise HTTPException(status_code=500, detail=error_msg)
 
 
+@app.get("/api/test-scraper")
+async def test_scraper():
+    """
+    Test the SofaScore scraper to see if it can fetch data.
+    Returns diagnostic information about what the scraper is able to access.
+    """
+    try:
+        print("\n🧪 Testing scraper connection...")
+        
+        # Test with one player (Jonathan David)
+        test_player = "Jonathan David"
+        player_id = 935564
+        
+        import tls_client
+        session = tls_client.Session(
+            client_identifier="chrome_120",
+            random_tls_extension_order=True
+        )
+        
+        # Test basic player endpoint
+        url = f"https://api.sofascore.com/api/v1/player/{player_id}/events/last/0"
+        
+        import asyncio
+        response = await asyncio.to_thread(session.get, url)
+        
+        return {
+            "status_code": response.status_code,
+            "can_connect": response.status_code == 200,
+            "url_tested": url,
+            "response_size": len(response.content) if response.content else 0,
+            "player_tested": test_player,
+            "message": "Check if status_code is 200. If not, SofaScore may be blocking requests."
+        }
+    except Exception as e:
+        print(f"❌ Test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "error": str(e),
+            "can_connect": False,
+            "message": "Scraper test failed"
+        }
+
+
 @app.get("/api/db-stats")
 async def get_db_stats():
     """
