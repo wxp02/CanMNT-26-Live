@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import { fetchLivePulse } from "@/lib/api";
 
 interface PlayerEvent {
   id: number;
@@ -17,11 +18,6 @@ interface PlayerEvent {
   team?: string;
 }
 
-interface LivePulseResponse {
-  events: PlayerEvent[];
-  last_updated: string;
-}
-
 export function LivePulse() {
   const [events, setEvents] = useState<PlayerEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,11 +25,7 @@ export function LivePulse() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/live-pulse");
-      if (!response.ok) {
-        throw new Error("Failed to fetch events");
-      }
-      const data: LivePulseResponse = await response.json();
+      const data = await fetchLivePulse();
       setEvents(data.events);
       setError(null);
     } catch (err) {
