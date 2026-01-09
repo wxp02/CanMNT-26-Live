@@ -4,19 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
-import { fetchLivePulse } from "@/lib/api";
-
-interface PlayerEvent {
-  id: number;
-  player: string;
-  event: string;
-  type: "goal" | "assist" | "card" | "substitution";
-  context: string;
-  minute: string;
-  timestamp: string;
-  league: string;
-  team?: string;
-}
+import { fetchLivePulse, PlayerEvent } from "@/lib/api";
 
 export function LivePulse() {
   const [events, setEvents] = useState<PlayerEvent[]>([]);
