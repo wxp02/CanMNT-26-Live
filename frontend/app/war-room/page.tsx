@@ -49,7 +49,7 @@ export default function WarRoom() {
               Data-driven roster predictions: Who's on the plane to Toronto?
             </p>
             <p className="text-sm text-muted-foreground max-w-3xl">
-              All statistics are from club competitions only (2024/25 season).
+              All statistics are from club competitions only (2025/26 season).
             </p>
           </div>
 

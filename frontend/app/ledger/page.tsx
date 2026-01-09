@@ -57,7 +57,7 @@ export default function Ledger() {
               leagues
             </p>
             <p className="text-sm text-muted-foreground max-w-3xl">
-              All statistics are from the 2024/25 season.
+              All statistics are from the 2025/26 season.
             </p>
           </div>
         </div>
