@@ -89,9 +89,14 @@ export function ActivityTable({ filters }: ActivityTableProps) {
   // Sort activities by unix_timestamp (most recent first)
   // If unix_timestamp is not available, fall back to parsing timestamp string
   const sortedActivities = [...filteredActivities].sort((a, b) => {
-    // If both have unix_timestamp, use that
+    // If both have unix_timestamp, use that for primary sort
     if (a.unix_timestamp && b.unix_timestamp) {
-      return b.unix_timestamp - a.unix_timestamp;
+      const timeDiff = b.unix_timestamp - a.unix_timestamp;
+      // If times are equal, use ID as tiebreaker for stable sort
+      if (timeDiff === 0) {
+        return b.id - a.id;
+      }
+      return timeDiff;
     }
 
     // Otherwise, parse the relative timestamp string
@@ -113,7 +118,16 @@ export function ActivityTable({ filters }: ActivityTableProps) {
       return 999999; // Very old
     };
 
-    return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
+    const timeA = getTimeValue(a.timestamp);
+    const timeB = getTimeValue(b.timestamp);
+    
+    // Primary sort by time
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+    
+    // Secondary sort by ID for stability when times are equal
+    return b.id - a.id;
   });
 
   // Pagination
