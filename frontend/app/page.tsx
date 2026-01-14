@@ -1,6 +1,7 @@
 "use client";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { LivePulse } from "@/components/live-pulse";
+import { MobileNav } from "@/components/mobile-nav";
 import Link from "next/link";
 
 export default function CommandCenter() {
@@ -9,7 +10,7 @@ export default function CommandCenter() {
       {/* Navigation */}
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-2">
                 <span className="text-lg font-bold tracking-tight text-foreground">
@@ -37,6 +38,7 @@ export default function CommandCenter() {
                 </Link>
               </div>
             </div>
+            <MobileNav />
           </div>
         </div>
       </nav>

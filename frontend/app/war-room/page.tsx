@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { RosterTiers } from "@/components/roster-tiers"
-import { Lock, TrendingUp, Waves, TrendingDown } from "lucide-react"
+import Link from "next/link";
+import { RosterTiers } from "@/components/roster-tiers";
+import { MobileNav } from "@/components/mobile-nav";
+import { Lock, TrendingUp, Waves, TrendingDown } from "lucide-react";
 
 export default function WarRoom() {
   return (
@@ -13,7 +14,9 @@ export default function WarRoom() {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-2">
-                <span className="text-lg font-bold tracking-tight text-foreground">CanMNT 26 LIVE</span>
+                <span className="text-lg font-bold tracking-tight text-foreground">
+                  CanMNT 26 LIVE
+                </span>
               </Link>
               <div className="hidden md:flex gap-6">
                 <Link
@@ -36,6 +39,7 @@ export default function WarRoom() {
                 </Link>
               </div>
             </div>
+            <MobileNav />
           </div>
         </div>
       </nav>
@@ -44,7 +48,9 @@ export default function WarRoom() {
       <section className="border-b border-border bg-gradient-to-b from-background to-muted/20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-balance">The War Room</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-balance">
+              The War Room
+            </h1>
             <p className="text-lg text-muted-foreground max-w-3xl text-balance">
               Data-driven roster predictions: Who's on the plane to Toronto?
             </p>
@@ -92,5 +98,5 @@ export default function WarRoom() {
         <RosterTiers />
       </section>
     </div>
-  )
+  );
 }
