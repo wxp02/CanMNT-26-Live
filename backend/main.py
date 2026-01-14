@@ -247,6 +247,79 @@ async def scrape_events():
         raise HTTPException(status_code=500, detail=error_msg)
 
 
+@app.post("/api/cleanup-duplicates")
+async def cleanup_duplicates():
+    """
+    Remove duplicate events from the database.
+    This should be called once after deploying the duplicate fix.
+    
+    Returns:
+        - duplicates_found: Number of duplicate entries found
+        - duplicates_removed: Number of duplicates removed
+        - unique_events: Final count of unique events
+    """
+    try:
+        print("\n🔍 Finding duplicate events...")
+        
+        # Get all events
+        all_events = await db_service.db.playerevent.find_many(
+            order={'matchTime': 'desc'}
+        )
+        
+        total_count = len(all_events)
+        print(f"Found {total_count} total events")
+        
+        # Track unique events by their natural key
+        seen = set()
+        duplicates_to_delete = []
+        
+        for event in all_events:
+            # Natural key: player + event type + minute + context (match)
+            natural_key = (
+                event.player,
+                event.eventType,
+                event.minute,
+                event.context
+            )
+            
+            if natural_key in seen:
+                # This is a duplicate
+                duplicates_to_delete.append(event.id)
+                print(f"  ❌ Duplicate: {event.player} - {event.event} at {event.minute} in {event.context}")
+            else:
+                seen.add(natural_key)
+        
+        duplicates_found = len(duplicates_to_delete)
+        
+        if duplicates_to_delete:
+            print(f"\n🗑️  Deleting {duplicates_found} duplicate entries...")
+            
+            # Delete duplicates
+            result = await db_service.db.playerevent.delete_many(
+                where={'id': {'in': duplicates_to_delete}}
+            )
+            
+            print(f"✅ Deleted {result} duplicate entries")
+        else:
+            print("✅ No duplicates found!")
+        
+        # Get final count
+        final_count = await db_service.db.playerevent.count()
+        print(f"📊 Final database count: {final_count} unique events")
+        
+        return {
+            "success": True,
+            "duplicates_found": duplicates_found,
+            "duplicates_removed": duplicates_found,
+            "unique_events": final_count,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Cleanup failed: {error_msg}")
+        raise HTTPException(status_code=500, detail=error_msg)
+
+
 @app.get("/api/test-scraper")
 async def test_scraper():
     """
