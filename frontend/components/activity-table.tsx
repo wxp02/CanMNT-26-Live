@@ -132,7 +132,11 @@ export function ActivityTable({ filters }: ActivityTableProps) {
 
   // Pagination
   const totalPages = Math.ceil(sortedActivities.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  
+  // Ensure currentPage is valid (in case data changes)
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  
+  const startIndex = (validCurrentPage - 1) * itemsPerPage;
   const paginatedActivities = sortedActivities.slice(
     startIndex,
     startIndex + itemsPerPage
@@ -141,7 +145,7 @@ export function ActivityTable({ filters }: ActivityTableProps) {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters]);
+  }, [filters.eventType, filters.timeRange, filters.player]);
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card overflow-hidden p-12">
@@ -191,9 +195,12 @@ export function ActivityTable({ filters }: ActivityTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedActivities.map((activity) => {
+            {paginatedActivities.map((activity, index) => {
+              // Create a unique key combining multiple fields to ensure uniqueness
+              const uniqueKey = `${activity.id}-${activity.player}-${activity.minute}-${activity.type}`;
+              
               return (
-                <TableRow key={activity.id} className="hover:bg-muted/50">
+                <TableRow key={uniqueKey} className="hover:bg-muted/50">
                   <TableCell className="font-mono text-sm text-muted-foreground">
                     <div>{activity.timestamp}</div>
                     <div className="text-xs">{activity.minute}</div>
@@ -242,18 +249,18 @@ export function ActivityTable({ filters }: ActivityTableProps) {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
+              disabled={validCurrentPage === 1}
             >
               Previous
             </Button>
             <div className="text-sm font-medium">
-              Page {currentPage} of {totalPages}
+              Page {validCurrentPage} of {totalPages}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
+              disabled={validCurrentPage === totalPages}
             >
               Next
             </Button>
