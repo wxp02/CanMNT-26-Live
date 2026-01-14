@@ -85,10 +85,41 @@ export function ActivityTable({ filters }: ActivityTableProps) {
 
     return true;
   });
+
+  // Sort activities by unix_timestamp (most recent first)
+  // If unix_timestamp is not available, fall back to parsing timestamp string
+  const sortedActivities = [...filteredActivities].sort((a, b) => {
+    // If both have unix_timestamp, use that
+    if (a.unix_timestamp && b.unix_timestamp) {
+      return b.unix_timestamp - a.unix_timestamp;
+    }
+
+    // Otherwise, parse the relative timestamp string
+    const getTimeValue = (timestamp: string) => {
+      const lower = timestamp.toLowerCase();
+      if (lower.includes("just now")) return 0;
+      if (lower.includes("minute")) {
+        const match = lower.match(/(\d+)\s*minute/);
+        return match ? parseInt(match[1]) : 0;
+      }
+      if (lower.includes("hour")) {
+        const match = lower.match(/(\d+)\s*hour/);
+        return match ? parseInt(match[1]) * 60 : 0;
+      }
+      if (lower.includes("day")) {
+        const match = lower.match(/(\d+)\s*day/);
+        return match ? parseInt(match[1]) * 1440 : 0;
+      }
+      return 999999; // Very old
+    };
+
+    return getTimeValue(a.timestamp) - getTimeValue(b.timestamp);
+  });
+
   // Pagination
-  const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedActivities.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedActivities = filteredActivities.slice(
+  const paginatedActivities = sortedActivities.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -118,7 +149,7 @@ export function ActivityTable({ filters }: ActivityTableProps) {
     );
   }
 
-  if (filteredActivities.length === 0) {
+  if (sortedActivities.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card overflow-hidden p-12">
         <div className="text-center">
@@ -189,8 +220,8 @@ export function ActivityTable({ filters }: ActivityTableProps) {
         <div className="flex items-center justify-between px-4">
           <div className="text-sm text-muted-foreground">
             Showing {startIndex + 1} to{" "}
-            {Math.min(startIndex + itemsPerPage, filteredActivities.length)} of{" "}
-            {filteredActivities.length} events
+            {Math.min(startIndex + itemsPerPage, sortedActivities.length)} of{" "}
+            {sortedActivities.length} events
           </div>
           <div className="flex items-center gap-2">
             <Button

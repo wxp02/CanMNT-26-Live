@@ -188,10 +188,18 @@ class SofaScoreScraper:
                                 is_home = incident.get("isHome", False)
                                 player_team = home_team if is_home else away_team
                                 
+                                # Use incident ID if available, otherwise create composite ID
+                                incident_id = incident.get("id")
+                                if incident_id:
+                                    unique_event_id = incident_id
+                                else:
+                                    # Fallback: create composite ID from match + player + type + minute
+                                    unique_event_id = f"{event_id_num}_{player_id}_{event_type}_{minute}"
+                                
                                 print(f"      ✅ Found: {player_name} - {event_name} at {minute}' in {context}")
                                 
                                 all_events.append(PlayerEvent(
-                                    id=event_id,
+                                    id=unique_event_id,
                                     player=player_name,
                                     event=event_name,
                                     type=event_type,
@@ -202,7 +210,6 @@ class SofaScoreScraper:
                                     team=player_team,
                                     unix_timestamp=match_time  # Store actual timestamp for sorting
                                 ))
-                                event_id += 1
                         
                         # Small delay between requests
                         await asyncio.sleep(0.5)
