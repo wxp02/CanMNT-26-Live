@@ -125,9 +125,14 @@ class DatabaseService:
             }
         )
         
-        # Convert to PlayerEvent models
+        # Convert to PlayerEvent models with fresh timestamps
         events = []
         for db_event in db_events:
+            # Calculate fresh relative timestamp from matchTime
+            relative_timestamp = self._calculate_relative_time(db_event.matchTime)
+            # Convert matchTime to unix timestamp
+            unix_ts = int(db_event.matchTime.timestamp()) if db_event.matchTime else None
+            
             events.append(PlayerEvent(
                 id=db_event.eventId,
                 player=db_event.player,
@@ -137,7 +142,8 @@ class DatabaseService:
                 context=db_event.context,
                 league=db_event.league,
                 minute=db_event.minute,
-                timestamp=db_event.timestamp
+                timestamp=relative_timestamp,
+                unix_timestamp=unix_ts
             ))
         
         return events
@@ -201,6 +207,27 @@ class DatabaseService:
         
         # Default to recent past
         return now - timedelta(hours=1)
+    
+    def _calculate_relative_time(self, match_time: datetime) -> str:
+        """Calculate relative timestamp from match datetime"""
+        now = datetime.now(timezone.utc)
+        # Ensure match_time is timezone-aware
+        if match_time.tzinfo is None:
+            match_time = match_time.replace(tzinfo=timezone.utc)
+        
+        diff = now - match_time
+        
+        if diff.total_seconds() < 60:
+            return "just now"
+        elif diff.total_seconds() < 3600:
+            minutes = int(diff.total_seconds() / 60)
+            return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+        elif diff.total_seconds() < 86400:
+            hours = int(diff.total_seconds() / 3600)
+            return f"{hours} hour{'s' if hours != 1 else ''} ago"
+        else:
+            days = int(diff.total_seconds() / 86400)
+            return f"{days} day{'s' if days != 1 else ''} ago"
     
     async def save_season_stats(self, stats_data: dict) -> int:
         """
