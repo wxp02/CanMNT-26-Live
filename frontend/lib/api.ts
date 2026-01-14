@@ -81,6 +81,7 @@ export interface PlayerEvent {
   timestamp: string;
   league: string;
   team: string;
+  unix_timestamp?: number; // Optional: Unix timestamp for accurate sorting
 }
 
 export interface LivePulseResponse {
