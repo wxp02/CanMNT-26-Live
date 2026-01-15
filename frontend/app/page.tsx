@@ -2,6 +2,7 @@
 import { CountdownTimer } from "@/components/countdown-timer";
 import { LivePulse } from "@/components/live-pulse";
 import { MobileNav } from "@/components/mobile-nav";
+import { Footer } from "@/components/footer";
 import Link from "next/link";
 
 export default function CommandCenter() {
@@ -86,6 +87,8 @@ export default function CommandCenter() {
           <LivePulse />
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

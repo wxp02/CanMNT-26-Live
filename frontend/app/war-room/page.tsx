@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { RosterTiers } from "@/components/roster-tiers";
 import { MobileNav } from "@/components/mobile-nav";
+import { Footer } from "@/components/footer";
 import { Lock, TrendingUp, Waves, TrendingDown } from "lucide-react";
 
 export default function WarRoom() {
@@ -97,6 +98,8 @@ export default function WarRoom() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <RosterTiers />
       </section>
+
+      <Footer />
     </div>
   );
 }

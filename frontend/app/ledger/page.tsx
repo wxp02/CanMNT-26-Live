@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ActivityTable } from "@/components/activity-table";
 import { ActivityFilters } from "@/components/activity-filters";
 import { MobileNav } from "@/components/mobile-nav";
-
+import { Footer } from "@/components/footer";
 export default function Ledger() {
   const [filters, setFilters] = useState({
     eventType: "all",
@@ -74,6 +74,8 @@ export default function Ledger() {
         <ActivityFilters filters={filters} setFilters={setFilters} />
         <ActivityTable filters={filters} />
       </section>
+
+      <Footer />
     </div>
   );
 }
