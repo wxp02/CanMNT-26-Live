@@ -22,20 +22,7 @@ export const metadata: Metadata = {
     "Real-time tracking and analytics for Canadian Men's National Team ahead of 2026 World Cup",
   generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
+    icon: "/icon.png",
     apple: "/apple-icon.png",
   },
 };
@@ -49,8 +36,11 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* Google AdSense */}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4504189835164725"
-     crossOrigin="anonymous"></script>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4504189835164725"
+          crossOrigin="anonymous"
+        ></script>
 
         {/* Google Analytics */}
         <Script
