@@ -28,6 +28,7 @@ const ROSTER_PROBABILITIES: Record<string, number> = {
   "Tajon Buchanan": 100,
   "Alistair Johnston": 100,
   "Ismaël Koné": 100,
+  "Moise Bombito": 95,
   "Dayne St. Clair": 90,
   "Richie Laryea": 90,
   "Ali Ahmed": 90,
@@ -282,7 +283,7 @@ function PlayerCard({ player, tier }: { player: any; tier: string }) {
 
 // Categorize players into tiers based on probability
 function categorizePlayers(
-  statsData: Record<string, PlayerSeasonStats>
+  statsData: Record<string, PlayerSeasonStats>,
 ): PlayersByTier {
   const players: Player[] = Object.values(statsData).map((stats) => {
     const probability = ROSTER_PROBABILITIES[stats.player] || 0;
@@ -310,10 +311,10 @@ function categorizePlayers(
   // Categorize into tiers based on probability
   const locks = players.filter((p) => p.probability >= 75);
   const probables = players.filter(
-    (p) => p.probability >= 60 && p.probability < 75
+    (p) => p.probability >= 60 && p.probability < 75,
   );
   const bubble = players.filter(
-    (p) => p.probability >= 40 && p.probability < 60
+    (p) => p.probability >= 40 && p.probability < 60,
   );
   const cold = players.filter((p) => p.probability < 40);
 
@@ -335,7 +336,7 @@ export function RosterTiers() {
 
         if (data.players && Object.keys(data.players).length > 0) {
           console.log(
-            `Categorizing ${Object.keys(data.players).length} players...`
+            `Categorizing ${Object.keys(data.players).length} players...`,
           );
           const categorized = categorizePlayers(data.players);
           console.log("Categorized players:", categorized);
@@ -349,7 +350,7 @@ export function RosterTiers() {
         setError(
           `Failed to load player stats: ${
             err instanceof Error ? err.message : "Unknown error"
-          }`
+          }`,
         );
         // Keep mock data on error
       } finally {
