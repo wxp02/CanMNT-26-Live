@@ -27,7 +27,8 @@ SOFASCORE_PLAYER_IDS = {
     "Jayden Nelson": {"id": 1002489, "position": "RW", "team": "Austin FC"},
     "Tani Oluwaseyi": {"id": 1172477, "position": "ST", "team": "Villarreal CF"},
     "Theo Bair": {"id": 936848, "position": "ST", "team": "FC Lausanne-Sport"},
-    "Promise David": {"id": 1119328, "position": "ST", "team": "Royale Union Saint-Gilloise"}
+    "Promise David": {"id": 1119328, "position": "ST", "team": "Royale Union Saint-Gilloise"},
+    "Moise Bombito": {"id": 1469180, "position": "CB", "team": "OGC Nice"}
 }
 
 # Map player IDs for quick lookup (ID -> name)
