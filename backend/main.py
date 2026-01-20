@@ -247,6 +247,95 @@ async def scrape_events():
         raise HTTPException(status_code=500, detail=error_msg)
 
 
+@app.get("/api/player-matches")
+async def get_player_matches(player: str = None):
+    """
+    Get all match appearances for Canadian players from database cache.
+    Data is updated periodically via /api/scrape-player-matches
+    
+    Query Parameters:
+        - player (optional): Specific player name to fetch matches for
+    
+    Returns:
+        - Dictionary of player matches including team, opponent, score, rating, etc.
+    """
+    try:
+        print(f"\n📊 Fetching cached player matches{f' for {player}' if player else ' for all players'}...")
+        
+        # Get matches from database
+        matches = await db_service.get_player_matches(player)
+        
+        # Get last scrape time
+        last_scrape = await db_service.get_latest_match_scrape_time()
+        last_updated = last_scrape.isoformat() if last_scrape else datetime.now(timezone.utc).isoformat()
+        
+        if not matches:
+            print("⚠️  No player matches found in database. Run /api/scrape-player-matches to populate data.")
+        
+        return {
+            "matches": matches,
+            "count": len(matches),
+            "last_updated": last_updated
+        }
+    except Exception as e:
+        print(f"❌ Error in get_player_matches: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/scrape-player-matches")
+async def scrape_player_matches():
+    """
+    Manually trigger the scraper to fetch and save all player match appearances.
+    This should be called periodically to update the cached match data.
+    
+    Returns:
+        - matches_found: Number of matches fetched
+        - matches_saved: Number of matches saved to database
+        - success: Whether the scrape was successful
+    """
+    try:
+        print("\n🔄 Starting player matches scrape...")
+        
+        # Fetch matches from SofaScore
+        matches = await sofascore_scraper.get_player_matches()
+        matches_found = len(matches)
+        print(f"Found {matches_found} matches")
+        
+        # Save to database
+        matches_saved = await db_service.save_player_matches(matches)
+        print(f"Saved {matches_saved} matches")
+        
+        # Log the scraper run
+        await db_service.log_match_scraper_run(
+            matches_found=matches_found,
+            success=True
+        )
+        
+        print(f"✅ Player matches scrape complete: {matches_found} found, {matches_saved} saved")
+        
+        return {
+            "matches_found": matches_found,
+            "matches_saved": matches_saved,
+            "success": True,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        print(f"❌ Error in scrape_player_matches: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Log failed run
+        await db_service.log_match_scraper_run(
+            matches_found=0,
+            success=False,
+            error=str(e)
+        )
+        
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/cleanup-duplicates")
 async def cleanup_duplicates():
     """

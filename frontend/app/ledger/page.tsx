@@ -3,15 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ActivityTable } from "@/components/activity-table";
+import { GameLogTable } from "@/components/game-log-table";
 import { ActivityFilters } from "@/components/activity-filters";
 import { MobileNav } from "@/components/mobile-nav";
 import { Footer } from "@/components/footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 export default function Ledger() {
   const [filters, setFilters] = useState({
     eventType: "all",
     timeRange: "all",
     player: "all",
   });
+
+  const [activeTab, setActiveTab] = useState("stats");
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,8 +64,8 @@ export default function Ledger() {
               The Activity Ledger
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl text-balance">
-              A complete, timestamped record of every goal, assist, card, and
-              action from CanMNT players across all leagues
+              A complete record of every goal, assist, card, and match from
+              CanMNT players across all leagues
             </p>
             <p className="text-sm text-muted-foreground max-w-3xl">
               All statistics are from the 2025/26 season.
@@ -69,10 +74,33 @@ export default function Ledger() {
         </div>
       </section>
 
-      {/* Filters and Table */}
+      {/* Filters and Tables with Tabs */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <ActivityFilters filters={filters} setFilters={setFilters} />
-        <ActivityTable filters={filters} />
+        <Tabs
+          defaultValue="stats"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="stats">Activity Feed</TabsTrigger>
+            <TabsTrigger value="gamelog">Match Log</TabsTrigger>
+          </TabsList>
+
+          <ActivityFilters
+            filters={filters}
+            setFilters={setFilters}
+            hideEventType={activeTab === "gamelog"}
+          />
+
+          <TabsContent value="stats">
+            <ActivityTable filters={filters} />
+          </TabsContent>
+
+          <TabsContent value="gamelog">
+            <GameLogTable filters={filters} />
+          </TabsContent>
+        </Tabs>
       </section>
 
       <Footer />

@@ -343,7 +343,119 @@ class DatabaseService:
                 "error": error
             }
         )
+    
+    async def save_player_matches(self, matches: List[dict]) -> int:
+        """
+        Save player match appearances to database
+        Returns: Number of matches saved
+        """
+        if not self._connected:
+            await self.connect()
+        saved_count = 0
+        
+        for match in matches:
+            try:
+                await self.db.playermatch.upsert(
+                    where={
+                        "matchId_player": {
+                            "matchId": match["match_id"],
+                            "player": match["player"]
+                        }
+                    },
+                    data={
+                        "create": {
+                            "matchId": match["match_id"],
+                            "player": match["player"],
+                            "team": match["team"],
+                            "opponent": match["opponent"],
+                            "score": match["score"],
+                            "league": match["league"],
+                            "matchTime": match["match_time"],
+                            "timestamp": match["timestamp"],
+                            "isSubstitute": match["is_substitute"],
+                            "rating": match.get("rating")
+                        },
+                        "update": {
+                            "score": match["score"],
+                            "timestamp": match["timestamp"],
+                            "isSubstitute": match["is_substitute"],
+                            "rating": match.get("rating")
+                        }
+                    }
+                )
+                saved_count += 1
+            except Exception as e:
+                print(f"Error saving match {match['match_id']}: {e}")
+                continue
+        
+        return saved_count
+    
+    async def get_player_matches(self, player: Optional[str] = None) -> List[dict]:
+        """
+        Get player match appearances from database
+        
+        Args:
+            player: Optional player name filter
+        
+        Returns:
+            List of match dictionaries
+        """
+        if not self._connected:
+            await self.connect()
+        
+        where_clause = {}
+        if player:
+            where_clause["player"] = player
+        
+        matches = await self.db.playermatch.find_many(
+            where=where_clause,
+            order={"matchTime": "desc"}
+        )
+        
+        # Convert to dictionary format
+        result = []
+        for match in matches:
+            result.append({
+                "match_id": match.matchId,
+                "player": match.player,
+                "team": match.team,
+                "opponent": match.opponent,
+                "score": match.score,
+                "league": match.league,
+                "match_time": match.matchTime.isoformat(),
+                "timestamp": match.timestamp,
+                "is_substitute": match.isSubstitute,
+                "rating": match.rating
+            })
+        
+        return result
+    
+    async def get_latest_match_scrape_time(self) -> Optional[datetime]:
+        """Get the timestamp of the last successful match scrape"""
+        if not self._connected:
+            await self.connect()
+        
+        latest_run = await self.db.matchscraperrun.find_first(
+            where={"success": True},
+            order={"ranAt": "desc"}
+        )
+        
+        return latest_run.ranAt if latest_run else None
+    
+    async def log_match_scraper_run(self, matches_found: int, success: bool, error: str = None):
+        """Log a match scraper run"""
+        if not self._connected:
+            await self.connect()
+        
+        await self.db.matchscraperrun.create(
+            data={
+                "matchesFound": matches_found,
+                "success": success,
+                "error": error
+            }
+        )
 
 
 # Global database service instance
 db_service = DatabaseService()
+

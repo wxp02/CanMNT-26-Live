@@ -48,16 +48,16 @@ export async function fetchSeasonStats(): Promise<SeasonStatsResponse> {
  * Fetch season statistics for a specific player
  */
 export async function fetchPlayerStats(
-  playerName: string
+  playerName: string,
 ): Promise<SeasonStatsResponse> {
   try {
     const response = await fetch(
       `${API_BASE_URL}/api/season-stats?player=${encodeURIComponent(
-        playerName
+        playerName,
       )}`,
       {
         cache: "no-store",
-      }
+      },
     );
 
     if (!response.ok) {
@@ -105,6 +105,52 @@ export async function fetchLivePulse(): Promise<LivePulseResponse> {
     return await response.json();
   } catch (error) {
     console.error("Error fetching live pulse:", error);
+    throw error;
+  }
+}
+export interface PlayerMatch {
+  match_id: string;
+  player: string;
+  team: string;
+  opponent: string;
+  score: string;
+  league: string;
+  match_time: string;
+  timestamp: string;
+  is_substitute: boolean;
+  rating: number | null;
+}
+
+export interface PlayerMatchesResponse {
+  matches: PlayerMatch[];
+  count: number;
+  last_updated: string;
+}
+
+/**
+ * Fetch all player match appearances
+ */
+export async function fetchPlayerMatches(
+  playerName?: string,
+): Promise<PlayerMatchesResponse> {
+  try {
+    const url = playerName
+      ? `${API_BASE_URL}/api/player-matches?player=${encodeURIComponent(
+          playerName,
+        )}`
+      : `${API_BASE_URL}/api/player-matches`;
+
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch player matches: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching player matches:", error);
     throw error;
   }
 }

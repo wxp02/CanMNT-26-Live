@@ -18,9 +18,14 @@ interface ActivityFiltersProps {
     player: string;
   };
   setFilters: (filters: any) => void;
+  hideEventType?: boolean;
 }
 
-export function ActivityFilters({ filters, setFilters }: ActivityFiltersProps) {
+export function ActivityFilters({
+  filters,
+  setFilters,
+  hideEventType = false,
+}: ActivityFiltersProps) {
   const [players, setPlayers] = useState<string[]>([]);
 
   useEffect(() => {
@@ -29,7 +34,7 @@ export function ActivityFilters({ filters, setFilters }: ActivityFiltersProps) {
         const data = await fetchLivePulse();
         // Get unique player names
         const uniquePlayers = Array.from(
-          new Set(data.events.map((e) => e.player))
+          new Set(data.events.map((e) => e.player)),
         ).sort();
         setPlayers(uniquePlayers);
       } catch (err) {
@@ -45,20 +50,24 @@ export function ActivityFilters({ filters, setFilters }: ActivityFiltersProps) {
         <span className="text-sm font-medium text-foreground">Filter by:</span>
       </div>
 
-      <Select
-        value={filters.eventType}
-        onValueChange={(value) => setFilters({ ...filters, eventType: value })}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Event Type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Events</SelectItem>
-          <SelectItem value="goal">Goals Only</SelectItem>
-          <SelectItem value="assist">Assists Only</SelectItem>
-          <SelectItem value="card">Cards Only</SelectItem>
-        </SelectContent>
-      </Select>
+      {!hideEventType && (
+        <Select
+          value={filters.eventType}
+          onValueChange={(value) =>
+            setFilters({ ...filters, eventType: value })
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Event Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Events</SelectItem>
+            <SelectItem value="goal">Goals Only</SelectItem>
+            <SelectItem value="assist">Assists Only</SelectItem>
+            <SelectItem value="card">Cards Only</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
 
       <Select
         value={filters.timeRange}

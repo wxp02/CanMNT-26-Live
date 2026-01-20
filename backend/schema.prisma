@@ -69,3 +69,30 @@ model StatsScraperRun {
   success      Boolean
   error        String?
 }
+model PlayerMatch {
+  id           String   @id @default(uuid())
+  matchId      String   // SofaScore match ID
+  player       String
+  team         String
+  opponent     String
+  score        String   // e.g., "2-1"
+  league       String
+  matchTime    DateTime
+  timestamp    String   // Relative timestamp
+  isSubstitute Boolean  @default(false)
+  rating       Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([player])
+  @@index([matchTime])
+  @@unique([matchId, player])
+}
+
+model MatchScraperRun {
+  id            String   @id @default(uuid())
+  ranAt         DateTime @default(now())
+  matchesFound  Int
+  success       Boolean
+  error         String?
+}

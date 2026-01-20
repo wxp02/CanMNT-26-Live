@@ -399,5 +399,96 @@ class SofaScoreScraper:
         return all_stats
 
 
+    async def get_player_matches(self) -> List[Dict[str, Any]]:
+        """
+        Get all match appearances for Canadian players from SofaScore
+        Returns complete match list regardless of events
+        """
+        all_matches = []
+        
+        try:
+            print("\n🔍 Fetching player match appearances from SofaScore...")
+            
+            for player_name, player_data in self.sofascore_player_ids.items():
+                try:
+                    player_id = player_data.get("id") if isinstance(player_data, dict) else player_data
+                    url = f"{self.base_url}/player/{player_id}/events/last/0"
+                    
+                    response = await asyncio.to_thread(self.session.get, url)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        events = data.get("events", [])
+                        
+                        print(f"   Checking {player_name}...")
+                        
+                        # Process matches from 2025/26 season
+                        cutoff_time = datetime.now(timezone.utc) - timedelta(days=200)
+                        
+                        for event in events[:35]:
+                            match_time = event.get("startTimestamp", 0)
+                            event_datetime = datetime.fromtimestamp(match_time, tz=timezone.utc)
+                            
+                            if event_datetime < cutoff_time:
+                                continue
+                            
+                            status = event.get("status", {}).get("type", "")
+                            if status not in ["finished"]:
+                                continue
+                            
+                            match_id = event.get("id")
+                            if not match_id:
+                                continue
+                            
+                            # Get match details
+                            home_team = event.get("homeTeam", {}).get("name", "")
+                            away_team = event.get("awayTeam", {}).get("name", "")
+                            home_score = event.get("homeScore", {}).get("current", 0)
+                            away_score = event.get("awayScore", {}).get("current", 0)
+                            score_str = f"{home_score}-{away_score}"
+                            tournament = event.get("tournament", {}).get("name", "Unknown League")
+                            
+                            # Determine player's team
+                            player_team = self.get_player_team(player_name)
+                            is_home = home_team == player_team or home_team in player_team
+                            opponent = away_team if is_home else home_team
+                            
+                            timestamp = self.calculate_timestamp_from_unix(match_time)
+                            
+                            print(f"      ✅ Found match: {player_name} in {home_team} {score_str} {away_team}")
+                            
+                            all_matches.append({
+                                "match_id": str(match_id),
+                                "player": player_name,
+                                "team": player_team,
+                                "opponent": opponent,
+                                "score": score_str,
+                                "league": tournament,
+                                "match_time": event_datetime,
+                                "timestamp": timestamp,
+                                "is_substitute": False,  # Will be updated from events if substitution found
+                                "rating": None,  # Not available in match list
+                            })
+                        
+                        await asyncio.sleep(0.5)
+                        
+                    else:
+                        print(f"   ⚠️ Could not fetch data for {player_name} (status: {response.status_code})")
+                        
+                except Exception as e:
+                    print(f"   Error processing player {player_name}: {e}")
+                    continue
+        
+        except Exception as e:
+            print(f"❌ Error getting player matches: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        print(f"\n✅ Total matches found: {len(all_matches)}")
+        return all_matches
+
+
+
+
 sofascore_scraper = SofaScoreScraper()
 
