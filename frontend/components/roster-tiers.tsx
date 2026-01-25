@@ -47,6 +47,7 @@ const ROSTER_PROBABILITIES: Record<string, number> = {
 
   // Outside Looking In (40-60% Probability)
   "Joel Waterman": 59,
+  "Liam Millar": 58,
   "Theo Bair": 50,
   "Kamal Miller": 45,
   "Jonathan Osorio": 40,

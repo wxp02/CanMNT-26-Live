@@ -22,13 +22,14 @@ SOFASCORE_PLAYER_IDS = {
     "Junior Hoilett": {"id": 33478, "position": "LW", "team": "Hibernian"},
     "Jacob Shaffelburg": {"id": 976313, "position": "LW", "team": "Nashville SC"},
     "Nathan-Dylan Saliba": {"id": 1093229, "position": "CM", "team": "RSC Anderlecht"},
-    "Ali Ahmed": {"id": 1464637, "position": "LM", "team": "Vancouver Whitecaps"},
+    "Ali Ahmed": {"id": 1464637, "position": "LM", "team": "Norwich City"},
     "Jonathan Osorio": {"id": 273031, "position": "CM", "team": "Toronto FC"},
     "Jayden Nelson": {"id": 1002489, "position": "RW", "team": "Austin FC"},
     "Tani Oluwaseyi": {"id": 1172477, "position": "ST", "team": "Villarreal CF"},
     "Theo Bair": {"id": 936848, "position": "ST", "team": "FC Lausanne-Sport"},
     "Promise David": {"id": 1119328, "position": "ST", "team": "Royale Union Saint-Gilloise"},
-    "Moise Bombito": {"id": 1469180, "position": "CB", "team": "OGC Nice"}
+    "Moise Bombito": {"id": 1469180, "position": "CB", "team": "OGC Nice"},
+    "Liam Millar": {"id": 902083, "position": "LW", "team": "Hull City"}
 }
 
 # Map player IDs for quick lookup (ID -> name)
