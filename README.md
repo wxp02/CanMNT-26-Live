@@ -197,29 +197,6 @@ The app features multiple ways to update data automatically:
 - **GitHub Actions**: Runs every 4 hours automatically (configured in `.github/workflows/update-data.yml`)
 - **Render Cron Jobs**: Alternative cloud-based scheduling
 
-### Manual Updates
-
-```bash
-# Run the update script
-./update-data.sh
-
-# Or run individual scripts
-python backend/scrape_and_save.py           # Scrape match events
-python backend/scrape_season_stats.py       # Scrape season stats
-curl -X POST <your-api-url>/api/cleanup-duplicates  # Clean duplicates
-```
-
-### Local Automation
-
-```bash
-# Setup cron job (macOS/Linux)
-./setup-cron.sh
-
-# Or run Python scheduler
-cd backend && python auto_updater.py
-```
-
-See [AUTOMATION_OPTIONS.md](AUTOMATION_OPTIONS.md) for detailed automation setup instructions.
 
 ## 📡 API Endpoints
 
