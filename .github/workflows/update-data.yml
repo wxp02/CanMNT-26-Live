@@ -1,0 +1,32 @@
+name: Update Data
+
+on:
+  schedule:
+    # Run every 4 hours
+    - cron: "0 */4 * * *"
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update match events
+        run: |
+          echo "📊 Updating match events..."
+          curl -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-events
+
+      - name: Cleanup duplicates
+        run: |
+          echo "🧹 Cleaning up duplicates..."
+          curl -X POST https://canmnt-26-live-backend.onrender.com/api/cleanup-duplicates
+
+      - name: Update season stats
+        run: |
+          echo "📈 Updating season statistics..."
+          curl -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-season-stats
+
+      - name: Complete
+        run: echo "✅ Data update complete!"
