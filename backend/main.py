@@ -62,11 +62,79 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {
+    """Health check endpoint with database connectivity verification"""
+    health_status = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "environment": settings.environment
+        "environment": settings.environment,
+        "database": "disconnected"
     }
+    
+    try:
+        # Test database connection
+        await db_service.db.playerevent.count()
+        health_status["database"] = "connected"
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["database"] = f"error: {str(e)}"
+    
+    return health_status
+
+
+@app.get("/api/db-stats")
+async def get_db_stats():
+    """Get database statistics for debugging"""
+    try:
+        # Count events
+        event_count = await db_service.db.playerevent.count()
+        
+        # Get recent events
+        recent_events = await db_service.db.playerevent.find_many(
+            take=5,
+            order={'matchTime': 'desc'}
+        )
+        
+        # Count season stats
+        stats_count = await db_service.db.playerseasonstat.count()
+        
+        # Get latest scraper runs
+        latest_run = await db_service.db.scraperrun.find_first(
+            order={'ranAt': 'desc'}
+        )
+        
+        latest_stats_run = await db_service.db.seasonstatsscrape.find_first(
+            order={'ranAt': 'desc'}
+        )
+        
+        return {
+            "database": "connected",
+            "event_count": event_count,
+            "stats_count": stats_count,
+            "recent_events": [
+                {
+                    "player": e.player,
+                    "event": e.event,
+                    "minute": e.minute,
+                    "context": e.context,
+                    "matchTime": e.matchTime.isoformat()
+                } for e in recent_events
+            ] if recent_events else [],
+            "latest_scrape": {
+                "ranAt": latest_run.ranAt.isoformat() if latest_run else None,
+                "eventsFound": latest_run.eventsFound if latest_run else None,
+                "success": latest_run.success if latest_run else None
+            } if latest_run else None,
+            "latest_stats_scrape": {
+                "ranAt": latest_stats_run.ranAt.isoformat() if latest_stats_run else None,
+                "playersFound": latest_stats_run.playersFound if latest_stats_run else None,
+                "success": latest_stats_run.success if latest_stats_run else None
+            } if latest_stats_run else None
+        }
+    except Exception as e:
+        return {
+            "database": "error",
+            "error": str(e)
+        }
 
 
 @app.get("/api/season-stats")
@@ -138,9 +206,22 @@ async def scrape_season_stats():
         
         print(f"✅ Season stats scrape complete: {players_found} found, {players_saved} saved")
         
+        # Get sample of stats for debugging
+        sample_stats = []
+        if stats:
+            for player_name in list(stats.keys())[:3]:  # First 3 players
+                player_data = stats[player_name]
+                sample_stats.append({
+                    "player": player_name,
+                    "team": player_data.get("team", ""),
+                    "matches": player_data.get("matches", 0),
+                    "goals": player_data.get("goals", 0)
+                })
+        
         return {
             "players_found": players_found,
             "players_saved": players_saved,
+            "sample_stats": sample_stats,
             "success": True,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
@@ -227,10 +308,22 @@ async def scrape_events():
         
         print(f"✅ Scrape complete: {events_found} found, {events_saved} saved")
         
+        # Get sample of events for debugging
+        sample_events = []
+        if events:
+            for event in events[:3]:  # First 3 events
+                sample_events.append({
+                    "player": event.player,
+                    "event": event.event,
+                    "minute": event.minute,
+                    "context": event.context
+                })
+        
         return {
             "success": True,
             "events_found": events_found,
             "events_saved": events_saved,
+            "sample_events": sample_events,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:

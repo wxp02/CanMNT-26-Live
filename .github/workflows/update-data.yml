@@ -13,20 +13,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Health check
+        run: |
+          echo "🏥 Checking backend health..."
+          response=$(curl -s -w "\n%{http_code}" https://canmnt-26-live-backend.onrender.com/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          echo "Health status: $body"
+          echo "HTTP Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Backend is not healthy (HTTP $http_code)"
+            exit 1
+          fi
+          # Check if database is connected
+          if echo "$body" | grep -q '"database":"connected"'; then
+            echo "✅ Backend and database are healthy"
+          else
+            echo "❌ Database is not connected"
+            echo "$body"
+            exit 1
+          fi
+
       - name: Update match events
         run: |
           echo "📊 Updating match events..."
-          curl -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-events
+          response=$(curl -s -w "\n%{http_code}" -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-events)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          echo "Response: $body"
+          echo "HTTP Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Failed to update match events (HTTP $http_code)"
+            exit 1
+          fi
+          echo "✅ Match events updated successfully"
 
       - name: Cleanup duplicates
         run: |
           echo "🧹 Cleaning up duplicates..."
-          curl -X POST https://canmnt-26-live-backend.onrender.com/api/cleanup-duplicates
+          response=$(curl -s -w "\n%{http_code}" -X POST https://canmnt-26-live-backend.onrender.com/api/cleanup-duplicates)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          echo "Response: $body"
+          echo "HTTP Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Failed to cleanup duplicates (HTTP $http_code)"
+            exit 1
+          fi
+          echo "✅ Duplicates cleaned up successfully"
 
       - name: Update season stats
         run: |
           echo "📈 Updating season statistics..."
-          curl -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-season-stats
+          response=$(curl -s -w "\n%{http_code}" -X POST https://canmnt-26-live-backend.onrender.com/api/scrape-season-stats)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          echo "Response: $body"
+          echo "HTTP Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Failed to update season stats (HTTP $http_code)"
+            exit 1
+          fi
+          echo "✅ Season stats updated successfully"
 
       - name: Complete
         run: echo "✅ Data update complete!"
