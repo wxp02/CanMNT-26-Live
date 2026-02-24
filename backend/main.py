@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from models import LivePulseResponse, PlayerEvent
 from sofascore_scraper import sofascore_scraper
 from config import settings
@@ -563,14 +563,58 @@ async def test_scraper():
         import asyncio
         response = await asyncio.to_thread(session.get, url)
         
-        return {
+        diagnostic = {
             "status_code": response.status_code,
             "can_connect": response.status_code == 200,
             "url_tested": url,
             "response_size": len(response.content) if response.content else 0,
-            "player_tested": test_player,
-            "message": "Check if status_code is 200. If not, SofaScore may be blocking requests."
+            "player_tested": test_player
         }
+        
+        if response.status_code == 200:
+            data = response.json()
+            events = data.get("events", [])
+            diagnostic["total_events_returned"] = len(events)
+            diagnostic["cutoff_date"] = (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()
+            
+            # Analyze first 5 events
+            sample_events = []
+            finished_count = 0
+            recent_count = 0
+            cutoff_time = datetime.now(timezone.utc) - timedelta(days=200)
+            
+            for event in events[:5]:
+                match_time = event.get("startTimestamp", 0)
+                event_datetime = datetime.fromtimestamp(match_time, tz=timezone.utc)
+                status = event.get("status", {}).get("type", "")
+                
+                is_recent = event_datetime >= cutoff_time
+                is_finished = status == "finished"
+                
+                if is_recent:
+                    recent_count += 1
+                if is_finished:
+                    finished_count += 1
+                
+                sample_events.append({
+                    "tournament": event.get("tournament", {}).get("name", "Unknown"),
+                    "home_team": event.get("homeTeam", {}).get("name", ""),
+                    "away_team": event.get("awayTeam", {}).get("name", ""),
+                    "status": status,
+                    "date": event_datetime.isoformat(),
+                    "is_recent": is_recent,
+                    "is_finished": is_finished
+                })
+            
+            diagnostic["sample_events"] = sample_events
+            diagnostic["first_5_finished"] = finished_count
+            diagnostic["first_5_recent"] = recent_count
+            diagnostic["message"] = f"Found {len(events)} total events. {finished_count}/5 sample are finished, {recent_count}/5 are recent."
+        else:
+            diagnostic["message"] = "Cannot connect to SofaScore. Status code: " + str(response.status_code)
+        
+        return diagnostic
+        
     except Exception as e:
         print(f"❌ Test failed: {e}")
         import traceback
