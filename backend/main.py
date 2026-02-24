@@ -46,37 +46,73 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    import os
     return {
         "message": "CanMNT 26 Live API",
         "status": "running",
+        "database_url_set": bool(os.getenv("DATABASE_URL")),
         "endpoints": {
             "/api/live-pulse": "Get live player events (from database)",
             "/api/scrape-events": "Manually trigger scraper to update database (POST)",
             "/api/db-stats": "Get database statistics",
             "/api/season-stats": "Get current season statistics for all players",
             "/api/season-stats?player=Jonathan David": "Get stats for specific player",
-            "/health": "Health check"
+            "/health": "Health check with database status",
+            "/api/config-check": "Check configuration (debug)"
         }
+    }
+
+
+@app.get("/api/config-check")
+async def config_check():
+    """Check configuration and environment setup"""
+    import os
+    
+    return {
+        "environment": settings.environment,
+        "database_url_configured": bool(os.getenv("DATABASE_URL")),
+        "database_url_length": len(os.getenv("DATABASE_URL", "")),
+        "prisma_client_available": db_service is not None,
+        "database_service_connected": db_service._connected if hasattr(db_service, '_connected') else False
     }
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint with database connectivity verification"""
+    import os
+    
     health_status = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "environment": settings.environment,
-        "database": "disconnected"
+        "database": "checking",
+        "database_url_configured": bool(os.getenv("DATABASE_URL"))
     }
     
-    try:
-        # Test database connection
-        await db_service.db.playerevent.count()
-        health_status["database"] = "connected"
-    except Exception as e:
+    # Check if DATABASE_URL is set
+    if not os.getenv("DATABASE_URL"):
         health_status["status"] = "unhealthy"
-        health_status["database"] = f"error: {str(e)}"
+        health_status["database"] = "error"
+        health_status["database_error"] = "DATABASE_URL environment variable not set"
+        return health_status
+    
+    try:
+        # Ensure database is connected
+        if not db_service._connected:
+            print("⚠️ Database not connected, attempting to connect...")
+            await db_service.connect()
+        
+        # Test database connection with a simple query
+        count = await db_service.db.playerevent.count()
+        health_status["database"] = "connected"
+        health_status["database_status"] = f"{count} events in database"
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Database health check failed: {error_msg}")
+        health_status["status"] = "unhealthy"
+        health_status["database"] = "error"
+        health_status["database_error"] = error_msg
     
     return health_status
 
